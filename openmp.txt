@@ -1,0 +1,110 @@
+
+// SUM OF N NATURAL NUMBERS
+// 1 AND 2
+// PARALLEL CODE
+#include <stdio.h>
+#include <omp.h>
+
+int main() {
+    int n = 100; // Change this as needed
+    int sum = 0;
+
+    #pragma omp parallel for reduction(+:sum)
+    for (int i = 1; i <= n; i++) {
+        sum += i;
+    }
+
+    printf("Sum of first %d natural numbers is: %d\n", n, sum);
+    return 0;
+}
+
+
+// NO USE PARALLELIZATION
+#include <stdio.h>
+#include <omp.h>
+
+int main() {
+
+
+    int n = 100; // Change this value as needed
+    int sum = 0;
+
+    #pragma omp parallel for
+    for (int i = 1; i <= n; i++) {
+        #pragma omp critical
+        sum += i;
+    }
+
+    printf("Sum of first %d natural numbers is: %d\n", n, sum);
+    return 0;
+}
+
+
+
+//3
+// LOOP CARRIED DEPENDENCE 
+
+#include <stdio.h>
+#include <omp.h>
+
+#define N 10  // Array size
+
+int main() {
+    int A[N], B[N], C[N];
+
+    // Initialize arrays
+    for (int i = 0; i < N; i++) {
+        A[i] = i + 1;
+        B[i] = (i + 1) * 2;
+        C[i] = 0; // Initialize C
+    }
+
+    // Serial computation to handle the first dependency
+    C[0] = A[0] + B[0];
+
+    // Parallel loop with explicit handling of dependencies
+    #pragma omp parallel
+    {
+        for (int i = 1; i < N; i++) {
+            C[i] = C[i - 1] + A[i] + B[i];  // Loop-carried dependency on C[i-1]
+        }
+    }
+
+    // Print result
+    printf("Array C: ");
+    for (int i = 0; i < N; i++) {
+        printf("%d ", C[i]);
+    }
+    printf("\n");
+
+    return 0;
+}
+
+
+// SHARED AND PRIVATE 
+
+#include <stdio.h>
+#include <omp.h>
+
+int main() {
+    int sharedVar = 0; // Shared variable
+    int num_threads;
+
+    #pragma omp parallel private(num_threads)
+    {
+        int privateVar = omp_get_thread_num(); // Each thread gets its own copy
+
+        #pragma omp critical
+        {
+            sharedVar += privateVar; // Safely updating the shared variable
+        }
+
+        // Print private data for each thread
+        printf("Thread %d: privateVar = %d\n", omp_get_thread_num(), privateVar);
+    }
+
+    // Print final value of sharedVar
+    printf("Final sharedVar: %d\n", sharedVar);
+
+    return 0;
+}
