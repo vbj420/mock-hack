@@ -108,3 +108,88 @@ int main() {
 
     return 0;
 }
+
+
+// matrix mult 
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+#define N 500  // Define matrix size (adjust for performance testing)
+
+void initialize_matrix(int matrix[N][N]) {
+    for (int i = 0; i < N; i++)
+        for (int j = 0; j < N; j++)
+            matrix[i][j] = rand() % 10;  // Assign random values (0-9)
+}
+
+void print_matrix(int matrix[N][N]) {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++)
+            printf("%d ", matrix[i][j]);
+        printf("\n");
+    }
+}
+
+int main() {
+    int A[N][N], B[N][N], C[N][N] = {0};  // Initialize matrices
+
+    initialize_matrix(A);
+    initialize_matrix(B);
+
+    double start_time = omp_get_wtime();  // Start timing
+
+    // Parallelized matrix multiplication
+    #pragma omp parallel for collapse(2)
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            for (int k = 0; k < N; k++) {
+                C[i][j] += A[i][k] * B[k][j];  // Compute C[i][j]
+            }
+        }
+    }
+
+    double end_time = omp_get_wtime();  // End timing
+
+    printf("Parallel Execution Time: %f seconds\n", end_time - start_time);
+
+    return 0;
+}
+
+
+///pi estimation 
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+#define NUM_POINTS 100000000  // Number of random points (higher = better accuracy)
+
+int main() {
+    int count_inside = 0;
+    double x, y;
+    double pi_estimate;
+    
+    // Seed random number generator
+    srand(42);
+
+    double start_time = omp_get_wtime(); // Start timing
+
+    #pragma omp parallel for private(x, y) reduction(+:count_inside)
+    for (int i = 0; i < NUM_POINTS; i++) {
+        x = (double)rand() / RAND_MAX; // Random x in [0,1]
+        y = (double)rand() / RAND_MAX; // Random y in [0,1]
+
+        if (x * x + y * y <= 1) {
+            count_inside++;
+        }
+    }
+
+    pi_estimate = 4.0 * count_inside / NUM_POINTS;
+
+    double end_time = omp_get_wtime(); // End timing
+
+    printf("Estimated Pi: %f\n", pi_estimate);
+    printf("Parallel Execution Time: %f seconds\n", end_time - start_time);
+
+    return 0;
+}
