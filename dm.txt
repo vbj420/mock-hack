@@ -1,0 +1,426 @@
+
+
+from ucimlrepo import fetch_ucirepo
+
+credit_approval = fetch_ucirepo(id=27)
+X = credit_approval.data.features
+y = credit_approval.data.targets
+#print(X)
+
+#1)
+print("1")
+import pandas as pd
+# Access the 'type' attribute of the 'data' object within the 'credit_approval' variable.
+data = credit_approval.variables.type.unique()
+print(data)
+
+#2)
+print("2")
+# Assuming 'X' is the pandas DataFrame containing the features.
+numerical_attributes = X.select_dtypes(include=['number'])
+# Spread analysis (using describe())
+print(numerical_attributes.describe())
+# Distribution analysis (using histograms)
+import matplotlib.pyplot as plt
+numerical_attributes.hist(bins=10, figsize=(10, 8))  # Adjust bins as needed
+plt.tight_layout()  # Adjust layout to prevent overlapping labels
+plt.show()
+
+#3)
+print("3")
+# Assuming 'X' is the pandas DataFrame containing the features.
+numerical_attributes = X.select_dtypes(include=['number'])
+# Spread analysis (using describe())
+print(numerical_attributes.describe())
+# Distribution analysis (using histograms)
+import matplotlib.pyplot as plt
+numerical_attributes.hist(bins=10, figsize=(10, 8))  # Adjust bins as needed
+plt.tight_layout()  # Adjust layout to prevent overlapping labels
+plt.show()
+
+
+#5)
+print("5")
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Assuming 'numerical_attributes' DataFrame from the previous code is available.
+# Select a numerical attribute for the boxplot (replace 'A2' with your desired attribute)
+# The previous attribute_to_plot was 'A1' which does not exist in numerical_attributes columns
+# Replacing it with 'A2' which does exist in the columns
+attribute_to_plot = 'A2'
+# Create the boxplot
+plt.figure(figsize=(8, 6))  # Adjust figure size as needed
+sns.boxplot(x=numerical_attributes[attribute_to_plot])
+plt.title(f'Boxplot of {attribute_to_plot}')
+plt.show()
+0
+
+"""#4)
+#  Does the scatter plot project the distribution of the attribute values?
+# Yes, a scatter plot shows the joint distribution of two attributes.
+# Each point represents a single data instance, and the density of points in a particular region indicates the frequency
+# with which those attribute value combinations occur in the dataset.
+# It projects the distribution across two dimensions, allowing visualization of correlation and potential clusters.
+# However, a scatter plot does not show the full marginal distributions of individual attributes like a histogram would.
+
+"""
+
+#6)
+print("6")
+# Use catplot() function from Seaborn to generate different types of visualizations of categorical data.
+# Assuming 'X' is your DataFrame and it contains categorical columns.
+# Replace 'A1' and 'A16' with actual categorical column names from your dataset.
+# If 'A16' is numerical, convert it to categorical first using pd.Categorical(X['A16'])
+import seaborn as sns # Importing seaborn library
+import matplotlib.pyplot as plt # Importing matplotlib.pyplot
+categorical_cols = ['A1', 'A4', 'A5', 'A6', 'A7', 'A9', 'A10', 'A12', 'A13', 'A14', 'A16']
+for col in categorical_cols:
+  if col in X.columns:
+    plt.figure(figsize=(8, 6))
+    sns.catplot(x=col, kind="count", data=X)
+    plt.title(f'Countplot of {col}')
+    plt.show()
+    plt.figure(figsize=(8, 6))
+    sns.catplot(x=col, kind="box", data=X)
+    plt.title(f'Boxplot of {col}')
+    plt.show()
+    plt.figure(figsize=(8, 6))
+    sns.catplot(x=col, kind="violin", data=X)
+    plt.title(f'Violinplot of {col}')
+    plt.show()
+
+#7)
+print("7")
+# Analyze the similarities/dissimilarities of different numerical attributes in the dataset.
+# Assuming 'numerical_attributes' DataFrame from the previous code is available.
+# Correlation matrix
+correlation_matrix = numerical_attributes.corr()
+print(correlation_matrix)
+# Heatmap of the correlation matrix
+plt.figure(figsize=(10, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Correlation Matrix of Numerical Attributes')
+plt.show()
+
+# If missing values are found, choose appropriate method for data imputation
+print("8")
+# Check for missing values
+missing_values = X.isnull().sum()
+print(missing_values)
+# If missing values are present, choose an appropriate imputation method:
+
+# 1. Numerical Attributes:
+# If the numerical attributes have a normal distribution, consider using mean or median imputation.
+# Otherwise use more robust methods.
+
+# Example using median imputation:
+numerical_cols = X.select_dtypes(include=['number']).columns
+for col in numerical_cols:
+    if X[col].isnull().any():
+        X[col].fillna(X[col].median(), inplace=True)
+
+# 2. Categorical Attributes:
+# For categorical attributes, consider using the most frequent value or a more sophisticated method
+# like K-Nearest Neighbors (KNN) imputation.
+
+# Example using most frequent value imputation:
+categorical_cols = X.select_dtypes(include=['object']).columns
+for col in categorical_cols:
+    if X[col].isnull().any():
+        X[col].fillna(X[col].mode()[0], inplace=True)
+
+# Print the updated dataframe with imputed values.
+X
+
+# Use the appropriate method to remove the nosiy data (Try to use equal width or equal frequency binning)
+
+# 9) Use the appropriate method to remove the noisy data (Try to use equal width or equal frequency binning)
+
+import pandas as pd
+import numpy as np
+
+# Assuming 'X' is your DataFrame and it contains numerical columns with noise.
+# Choose a numerical column to demonstrate noise removal (replace 'A2' with your actual column name)
+attribute_to_clean = 'A2'
+
+# Equal Width Binning
+def equal_width_binning(data, num_bins):
+    min_val = data.min()
+    max_val = data.max()
+    bin_width = (max_val - min_val) / num_bins
+    bins = [min_val + i * bin_width for i in range(num_bins + 1)]
+    binned_data = pd.cut(data, bins=bins, labels=False, include_lowest=True, duplicates='drop')
+    return binned_data
+
+# Equal Frequency Binning
+def equal_frequency_binning(data, num_bins):
+    binned_data = pd.qcut(data, q=num_bins, labels=False, duplicates='drop')
+    return binned_data
+
+# Choose the binning method (replace with your preferred method and parameters)
+num_bins = 10 # Adjust the number of bins as needed
+X[attribute_to_clean] = equal_width_binning(X[attribute_to_clean], num_bins)
+# Alternatively, use equal frequency binning:
+# X[attribute_to_clean] = equal_frequency_binning(X[attribute_to_clean], num_bins)
+
+
+# Now 'X[attribute_to_clean]' contains the binned data, smoothing out the noise to some extent
+
+X
+
+#  Encode the categorical attributes using Label Encoder or One Hot Encoder, if needed.
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+import seaborn as sns # Importing seaborn library
+import matplotlib.pyplot as plt # Importing matplotlib.pyplot
+# Identify categorical columns (you might need to adjust this based on your data)
+categorical_cols = ['A1', 'A4', 'A5', 'A6', 'A7', 'A9', 'A10', 'A12', 'A13', 'A14', 'A16']
+# Convert specific columns to categorical
+for col in categorical_cols:
+    if col in X.columns:  # Check if column exists
+        X[col] = X[col].astype(str)
+
+# Create a OneHotEncoder object
+enc = OneHotEncoder(handle_unknown='ignore', sparse_output=False)  # handles unseen values during prediction, avoids sparse matrix
+# Fit the encoder on the categorical features
+# Modifying this line to apply it before label encoding
+filtered_categorical_cols = [col for col in categorical_cols if col in X.columns] # filter columns
+enc.fit(X.loc[:, filtered_categorical_cols])
+# Transform the categorical features into one-hot encoded features
+num_X = enc.transform(X.loc[:, filtered_categorical_cols])
+# Create a new DataFrame with the one-hot encoded features
+ohe_df = pd.DataFrame(num_X, columns=enc.get_feature_names_out(filtered_categorical_cols))
+# Concatenate the one-hot encoded features with the original DataFrame
+X = pd.concat([X, ohe_df], axis=1)
+# Drop the original categorical columns
+X = X.drop(filtered_categorical_cols, axis=1)
+# Display the updated DataFrame
+X
+
+# Normalize the attribute values using various normalization techniques (such as
+# min-max normalization, z-score normalization, and normalization by decimal
+# scaling).
+
+# Min-Max Normalization
+def min_max_normalize(data):
+    min_val = data.min()
+    max_val = data.max()
+    normalized_data = (data - min_val) / (max_val - min_val)
+    return normalized_data
+
+# Z-Score Normalization
+def z_score_normalize(data):
+    mean = data.mean()
+    std_dev = data.std()
+    normalized_data = (data - mean) / std_dev
+    return normalized_data
+
+# Decimal Scaling Normalization
+def decimal_scaling_normalize(data):
+    max_val = data.abs().max()
+    j = 0
+    while max_val >= 1:
+        max_val /= 10
+        j += 1
+    normalized_data = data / (10**j)
+    return normalized_data
+
+
+# Apply normalization techniques to numerical attributes
+numerical_cols = X.select_dtypes(include=['number']).columns
+for col in numerical_cols:
+    X[col + '_min_max'] = min_max_normalize(X[col])
+    X[col + '_z_score'] = z_score_normalize(X[col])
+    X[col + '_decimal_scaling'] = decimal_scaling_normalize(X[col])
+
+X
+
+#  Apply the different types of feature selection methods on the given dataset to
+# identify the prominent features
+
+# Filter out non-numeric columns for feature selection methods
+numeric_cols = X.select_dtypes(include=['number']).columns
+X_numeric = X[numeric_cols]
+
+from sklearn.feature_selection import SelectKBest, chi2, f_classif, mutual_info_classif
+
+# Assuming 'y' is your target variable (needs to be numerical or categorical)
+# Convert 'y' to numerical if it's categorical
+
+# 1. Chi-squared test (for non-negative features)
+selector_chi2 = SelectKBest(chi2, k=5)  # Select top 5 features
+# Replace negative values with 0 in X_numeric before applying chi2
+X_numeric_non_negative = X_numeric.clip(lower=0)  # Clip values to be >= 0
+X_chi2 = selector_chi2.fit_transform(X_numeric_non_negative, y['A16']) # Assuming A16 as target
+print("Chi-squared selected features:", X_numeric.columns[selector_chi2.get_support()])
+
+
+# 2. ANOVA F-value (for numerical features)
+selector_f_classif = SelectKBest(f_classif, k=5)  # Select top 5 features
+X_f_classif = selector_f_classif.fit_transform(X_numeric, y['A16']) # Assuming A16 as target
+print("ANOVA F-value selected features:", X_numeric.columns[selector_f_classif.get_support()])
+
+# 3. Mutual Information (for both numerical and categorical features)
+selector_mutual_info = SelectKBest(mutual_info_classif, k=5) # Select top 5 features
+X_mutual_info = selector_mutual_info.fit_transform(X_numeric, y['A16']) # Assuming A16 as target
+print("Mutual Information selected features:", X_numeric.columns[selector_mutual_info.get_support()])
+
+
+
+# Is dimensionality reduction to be applied on the dataset? If yes, choose the
+# appropriate dimensionality reduction technique, such as PCA or wavelet transform.
+
+# 13) Is dimensionality reduction to be applied on the dataset? If yes, choose the
+# appropriate dimensionality reduction technique, such as PCA or wavelet transform.
+print("13")
+from sklearn.decomposition import PCA
+
+# Apply PCA
+pca = PCA(n_components=0.95)  # Keep components explaining 95% of variance
+X_pca = pca.fit_transform(X_numeric)
+
+print("Original number of features:", X_numeric.shape[1])
+print("Reduced number of features after PCA:", X_pca.shape[1])
+
+# You can experiment with different values of n_components or explained_variance_ratio
+# to find the optimal number of components.
+
+print("14")
+# Convert '+' and '-' to 1 and 0 in the target variable, handling NaN
+y['A16'] = y['A16'].map({'+': 1, '-': 0}).fillna(-1).astype(int)
+# Convert to numerical, replacing NaN with -1
+
+# Calculate correlations using numpy for efficiency
+X_numeric = X.select_dtypes(include=['number'])  # Select only numeric columns
+correlations = np.corrcoef(X_numeric.values.T, y['A16'].values)[0, 1:]  # Calculate correlations
+
+# Create a Series for easier handling
+correlations = pd.Series(correlations, index=X_numeric.columns)
+
+# Print the correlations
+print(correlations)
+
+# Find the features with the highest absolute correlations
+highly_correlated_features = correlations[abs(correlations) > 0.2]  # Adjust the threshold (0.2) as needed
+print("\nHighly Correlated Features:\n", highly_correlated_features)
+
+#Alternatively, Visualize correlations with a heatmap
+import seaborn as sns # Make sure seaborn is imported
+import matplotlib.pyplot as plt # Make sure matplotlib.pyplot is imported
+plt.figure(figsize=(12, 10))
+sns.heatmap(X_numeric.corr(), annot=False, cmap='coolwarm', fmt=".2f") # Disable annotations for speed
+plt.title("Correlation Matrix of Features")
+plt.show()
+
+#  Generate visualization of the reduced dataset and elaborate your interpretations.
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Assuming X_pca is the reduced dataset obtained from PCA (step 13)
+
+# Check if there is only one principal component
+if X_pca.shape[1] == 1:
+    # If only one component, create a histogram instead of a scatter plot
+    plt.figure(figsize=(8, 6))
+    plt.hist(X_pca[:, 0], bins=20, color='skyblue', edgecolor='black')
+    plt.xlabel("Principal Component 1")
+    plt.ylabel("Frequency")
+    plt.title("Distribution of Principal Component 1")
+    plt.show()
+else:
+    # If more than one component, create the scatter plot as before
+    plt.figure(figsize=(8, 6))
+    plt.scatter(X_pca[:, 0], X_pca[:, 1], c=y['A16'], cmap='viridis')  # Color by target variable
+    plt.xlabel("Principal Component 1")
+    plt.ylabel("Principal Component 2")
+    plt.title("Scatter Plot of First Two Principal Components")
+    plt.colorbar(label='Target Variable (A16)')
+    plt.show()
+
+# Interpretation:
+# Observe the distribution of points in the scatter plot.  Look for clusters or separations
+# between different classes (if applicable). The color coding based on 'y' (your target
+# variable, in this case 'A16') helps to see if PCA has effectively separated different
+# credit card approval outcomes. Clusters might indicate natural groupings in the data.
+
+# 2. Explained variance ratio plot
+explained_variance_ratio = pca.explained_variance_ratio_
+cumulative_variance_ratio = explained_variance_ratio.cumsum()
+
+plt.figure(figsize=(8, 6))
+plt.bar(range(1, len(explained_variance_ratio) + 1), explained_variance_ratio, alpha=0.5, align='center', label='Individual Explained Variance')
+plt.step(range(1, len(cumulative_variance_ratio) + 1), cumulative_variance_ratio, where='mid', label='Cumulative Explained Variance')
+plt.ylabel('Explained variance ratio')
+plt.xlabel('Principal components')
+plt.legend(loc='best')
+plt.title('Explained Variance Ratio Plot')
+plt.show()
+
+# Interpretation:
+# The plot helps assess how much variance each principal component explains.  The cumulative
+# variance ratio indicates the total variance explained up to a certain number of principal
+# components.  This plot justifies the choice of 'n_components' in the PCA (e.g., keeping
+# components that explain 95% of the variance).
+
+# 3. (Optional) Pairplot of the first few principal components
+# Create a pairplot of the first few principal components if you have less than, say 6-7.
+# This helps to identify relationships and clusters among multiple dimensions simultaneously.
+
+if X_pca.shape[1] <= 6: # Check dimensionality for suitable pairplot
+    # Create a DataFrame for pairplot, including the hue column
+    df_for_pairplot = pd.DataFrame(X_pca[:,:6])
+    df_for_pairplot['hue'] = y['A16']  # Add the 'hue' column
+
+    sns.pairplot(df_for_pairplot, hue='hue', palette='viridis')  # Use the 'hue' column
+    plt.suptitle('Pairplot of Principal Components', y=1.02)
+    plt.show()
+
+# Interpretation for Pairplot:
+# Examine relationships between different principal components. Again, color-coding by the
+# target variable ('y') helps visualize patterns in how different classes are represented
+# in the reduced-dimension space.
+
+
+
+"""# 16) State any other significant observation(s) identified in the dataset or during the
+# feature selection process.
+
+# Example observations (replace with your actual findings):
+
+# 1. Outliers:  The boxplots of 'A2' and other numerical attributes revealed the presence of outliers.
+#    These outliers might skew statistical measures and could warrant further investigation or
+#    handling (e.g., removal or transformation).
+
+# 2. Feature Importance: The feature selection methods (chi-squared, ANOVA, mutual information)
+#    indicated that certain features ('A2', 'A14' etc. - replace with your actual findings) were
+#    highly important for predicting the target variable ('A16').  These features should be prioritized
+#    in the modeling process.  Features with low importance might be considered for removal.
+
+# 3. Correlation Patterns: The heatmap of the correlation matrix showed strong correlations between
+#    some numerical attributes. High correlations might suggest redundancy.  Investigate such pairs
+#    to understand the relationships between them.  If multicollinearity is an issue, consider
+#    removing highly correlated attributes to avoid model instability.
+
+# 4. PCA Results: PCA reduced the dimensionality of the dataset while retaining most of the variance.
+#    The explained variance plot showed that a smaller number of principal components captured
+#    a significant proportion of the information in the original data. This reduced dimensionality
+#    can improve model efficiency and avoid the curse of dimensionality.
+
+# 5. Categorical Feature Encoding: One-Hot Encoding was chosen over Label Encoding for categorical
+#    features to avoid introducing unintended ordinal relationships. One-hot encoding also prevented
+#    problems with the chi2 test (which requires non-negative inputs).
+
+# 6. Data Imbalance: The target variable may show an imbalance (check the countplot or other visualizations).
+#    This might affect classification model performance. Consider techniques like oversampling,
+#    undersampling, or using class weights to address the imbalance during model training.
+
+
+# Add more observations as needed.  Be specific in your descriptions and provide evidence
+# (e.g., specific attribute names, correlation coefficients, feature importances) to support
+# your observations.
+
+# Example of how to programmatically check for class imbalance in the target variable
+# (assuming 'y' is your target variable):
+
+# print(y['A16'].value_counts(normalize=True))  # Print the proportion of each class
+"""
